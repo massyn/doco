@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import click
@@ -15,8 +16,8 @@ from mddoco.writer import write_output
 @click.option(
     "--output", "-o", "output_path",
     default=".", show_default=True,
-    type=click.Path(file_okay=False, path_type=Path),
-    help="Directory to write the output file.",
+    type=click.Path(path_type=Path),
+    help="Output directory, or explicit output file path.",
 )
 @click.option(
     "--format", "-f", "fmt",
@@ -51,6 +52,8 @@ def main(
     toc_depth: int,
 ) -> None:
     """Convert markdown files in INPUT_PATH to a single document."""
+    logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.WARNING)
+
     try:
         md_files = find_markdown_files(input_path)
     except (ValueError, FileNotFoundError) as exc:
@@ -58,13 +61,25 @@ def main(
 
     click.echo(f"Found {len(md_files)} markdown file(s).")
 
-    raw = convert_files(md_files, toc=toc, toc_depth=toc_depth)
+    try:
+        raw = convert_files(md_files, toc=toc, toc_depth=toc_depth)
+    except Exception as exc:
+        raise click.ClickException(str(exc)) from exc
     sections = [(p, html) for p, html, _ in raw]
     toc_html = combine_toc([t for _, _, t in raw]) if toc else None
     has_mermaid = any('<div class="mermaid">' in html for _, html in sections)
 
-    resolved = input_path.resolve()
-    stem = resolved.stem if resolved.is_file() else resolved.name
+    # Resolve output directory and filename.
+    # If output_path has a suffix, treat it as an explicit file path.
+    # Otherwise treat it as a directory and derive the filename from the input.
+    if output_path.suffix:
+        out_dir = output_path.parent
+        out_filename = output_path.name
+    else:
+        resolved = input_path.resolve()
+        stem = resolved.stem if resolved.is_file() else resolved.name
+        out_dir = output_path
+        out_filename = f"{stem}.{fmt}"
 
     try:
         content = render_html(
@@ -78,12 +93,12 @@ def main(
         raise click.ClickException(str(exc)) from exc
 
     if fmt == "html":
-        output_file = write_output(content, output_path, f"{stem}.html")
+        output_file = write_output(content, out_dir, out_filename)
         click.echo(f"Written to {output_file}")
 
     elif fmt == "pdf":
-        output_path.mkdir(parents=True, exist_ok=True)
-        dest = output_path / f"{stem}.pdf"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        dest = out_dir / out_filename
         click.echo("Rendering PDF...")
         try:
             html_to_pdf(content, dest)

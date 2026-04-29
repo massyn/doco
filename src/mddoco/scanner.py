@@ -13,7 +13,7 @@ def find_markdown_files(input_path: Path) -> list[Path]:
         return [input_path]
 
     if input_path.is_dir():
-        files = sorted(input_path.rglob("*.md"))
+        files = sorted(p for p in input_path.rglob("*.md") if not p.name.startswith("_"))
         if not files:
             raise FileNotFoundError(f"No markdown files found in: {input_path}")
         return files

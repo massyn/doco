@@ -201,7 +201,7 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# 11. Graph rendering and error handling
+# 11. Graph rendering — valid blocks, single quotes, bare minimum
 # ---------------------------------------------------------------------------
 run_test \
     "graph block file" \
@@ -213,11 +213,6 @@ check_contains \
     "$OUT/graph/04_graph.html" \
     '<svg'
 
-check_contains \
-    "invalid graph block renders error notice" \
-    "$OUT/graph/04_graph.html" \
-    'graph-error'
-
 check_not_contains \
     "raw graph fenced block not present in output" \
     "$OUT/graph/04_graph.html" \
@@ -227,6 +222,21 @@ check_contains \
     "bare-minimum graph (data only) renders SVG" \
     "$OUT/graph/04_graph.html" \
     '<svg'
+
+check_contains \
+    "single-quoted graph block renders SVG" \
+    "$OUT/graph/04_graph.html" \
+    "Single Quote Test"
+
+# ---------------------------------------------------------------------------
+# 11b. Invalid graph block causes non-zero exit
+# ---------------------------------------------------------------------------
+echo -n "  "
+if ! mddoco "$FIXTURES/_invalid_graph.md" -o "$OUT/graph_error" &>/dev/null; then
+    pass "invalid graph block exits non-zero"
+else
+    fail "invalid graph block should have exited non-zero"
+fi
 
 # ---------------------------------------------------------------------------
 # 12. Comprehensive graph types
@@ -290,7 +300,28 @@ check_contains \
     'class="toc-block"'
 
 # ---------------------------------------------------------------------------
-# 14. Invalid input path → non-zero exit
+# 14. Explicit output file path
+# ---------------------------------------------------------------------------
+run_test \
+    "explicit output file path" \
+    "$OUT/explicit/mydoc.html" \
+    "$FIXTURES/single.md" -o "$OUT/explicit/mydoc.html"
+
+# ---------------------------------------------------------------------------
+# 15. Underscore-prefixed files are excluded from directory scans
+# ---------------------------------------------------------------------------
+run_test \
+    "directory scan excludes _ignored.md" \
+    "$OUT/underscore/fixtures.html" \
+    "$FIXTURES" -o "$OUT/underscore"
+
+check_not_contains \
+    "_ignored.md content absent from output" \
+    "$OUT/underscore/fixtures.html" \
+    "SENTINEL_IGNORED_FILE"
+
+# ---------------------------------------------------------------------------
+# 16. Invalid input path → non-zero exit
 # ---------------------------------------------------------------------------
 echo -n "  "
 if ! mddoco "tests/fixtures/nonexistent.md" -o "$OUT/invalid" &>/dev/null; then

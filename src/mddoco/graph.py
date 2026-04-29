@@ -1,11 +1,18 @@
+import ast
 import io
 import json
+import logging
 import re
-from html import escape, unescape
+from html import unescape
 
 import matplotlib
 matplotlib.use('Agg')  # non-interactive backend — must be set before importing pyplot
 import matplotlib.pyplot as plt
+
+log = logging.getLogger(__name__)
+
+_JSON_TO_PY = re.compile(r'\b(true|false|null)\b')
+_JSON_TO_PY_MAP = {'true': 'True', 'false': 'False', 'null': 'None'}
 
 _DEFAULT_COLOURS = [
     '#2d6cbe', '#e74c3c', '#27ae60', '#e67e22',
@@ -89,9 +96,22 @@ _GRAPH_BLOCK = re.compile(
 _SVG_HEADER = re.compile(r'^.*?(?=<svg)', re.DOTALL)
 
 
+def _parse_source(source: str) -> dict:
+    """Parse graph source, accepting strict JSON or Python-style literals.
+
+    Handles single quotes, and True/False/None or true/false/null interchangeably.
+    """
+    text = unescape(source).strip()
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        normalised = _JSON_TO_PY.sub(lambda m: _JSON_TO_PY_MAP[m.group()], text)
+        return ast.literal_eval(normalised)
+
+
 def _render_graph(source: str) -> str:
-    """Parse JSON source, render via graph_it, and return an inline SVG element."""
-    data = json.loads(unescape(source))
+    """Parse source, render via graph_it, and return an inline SVG element."""
+    data = _parse_source(source)
     svg = graph_it(data)
     svg = _SVG_HEADER.sub('', svg)  # strip XML declaration and DOCTYPE
     return f'<div class="graph">{svg}</div>'
@@ -100,18 +120,24 @@ def _render_graph(source: str) -> str:
 def process_graph(html: str) -> tuple[str, bool]:
     """Replace fenced graph blocks with rendered SVG charts.
 
-    Falls back to an inline error message if the block cannot be parsed or rendered.
+    Raises on any parse or render failure — errors are logged before raising
+    so the caller sees the problem on the console.
     Returns (processed_html, found).
     """
     found = bool(_GRAPH_BLOCK.search(html))
+    errors: list[Exception] = []
 
     def replace(m: re.Match) -> str:
         try:
             return _render_graph(m.group(1))
         except Exception as exc:
-            return (
-                f'<p class="graph-error"><strong>Graph error:</strong> '
-                f'{escape(str(exc))}</p>'
-            )
+            log.error("Graph error: %s", exc)
+            errors.append(exc)
+            return ""
 
-    return _GRAPH_BLOCK.sub(replace, html), found
+    processed = _GRAPH_BLOCK.sub(replace, html)
+
+    if errors:
+        raise errors[0]
+
+    return processed, found

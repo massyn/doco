@@ -30,10 +30,15 @@ Only `data` is required. Series are inferred from keys, type defaults to line, c
 }
 ```
 
-## Invalid graph (error handling)
-
-The block below has invalid JSON and should render an error notice rather than crash:
+## Single-quoted and Python-style booleans
 
 ```graph
-{ this is not valid json }
+{
+  'title': 'Single Quote Test',
+  'show_legend': False,
+  'data': {
+    'x': ['X', 'Y', 'Z'],
+    'Count': [5, 10, 7]
+  }
+}
 ```
