@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mddoco"
+version = "0.1.0"
+description = "Markdown to HTML/PDF document converter"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "click>=8.0",
+    "markdown>=3.5",
+    "jinja2>=3.1",
+    "playwright>=1.40",
+    "matplotlib>=3.7",
+]
+
+[project.scripts]
+mddoco = "mddoco.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+mddoco = ["themes/*.html"]
+
+[tool.ruff]
+src = ["src"]
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
