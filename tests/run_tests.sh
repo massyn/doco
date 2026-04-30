@@ -43,7 +43,7 @@ check_contains() {
     local file="$2"
     local pattern="$3"
 
-    if grep -q "$pattern" "$file" 2>/dev/null; then
+    if grep -qF -- "$pattern" "$file" 2>/dev/null; then
         pass "$label"
     else
         fail "$label — pattern not found in $file: $pattern"
@@ -56,7 +56,7 @@ check_not_contains() {
     local file="$2"
     local pattern="$3"
 
-    if ! grep -q "$pattern" "$file" 2>/dev/null; then
+    if ! grep -qF -- "$pattern" "$file" 2>/dev/null; then
         pass "$label"
     else
         fail "$label — unexpected pattern found in $file: $pattern"
