@@ -332,6 +332,124 @@ fi
 
 
 # ---------------------------------------------------------------------------
+# 17. default-wide theme
+# ---------------------------------------------------------------------------
+run_test \
+    "default-wide theme generates output" \
+    "$OUT/default_wide/fixtures.html" \
+    "$FIXTURES" --theme default-wide --title "Wide Default" -o "$OUT/default_wide"
+
+check_contains \
+    "default-wide: full-width container present" \
+    "$OUT/default_wide/fixtures.html" \
+    'width: 100%'
+
+check_not_contains \
+    "default-wide: no max-width constraint on container" \
+    "$OUT/default_wide/fixtures.html" \
+    'max-width: 860px'
+
+# ---------------------------------------------------------------------------
+# 18. professional-wide theme
+# ---------------------------------------------------------------------------
+run_test \
+    "professional-wide theme generates output" \
+    "$OUT/professional_wide/fixtures.html" \
+    "$FIXTURES" --theme professional-wide --title "Wide Professional" --toc -o "$OUT/professional_wide"
+
+check_contains \
+    "professional-wide: title banner rendered" \
+    "$OUT/professional_wide/fixtures.html" \
+    'class="doc-header"'
+
+check_not_contains \
+    "professional-wide: no max-width constraint on page-wrap" \
+    "$OUT/professional_wide/fixtures.html" \
+    'max-width: 900px'
+
+# ---------------------------------------------------------------------------
+# 19. dark theme
+# ---------------------------------------------------------------------------
+run_test \
+    "dark theme generates output" \
+    "$OUT/dark/fixtures.html" \
+    "$FIXTURES" --theme dark --title "Dark Theme Demo" -o "$OUT/dark"
+
+check_contains \
+    "dark theme: dark background variable defined" \
+    "$OUT/dark/fixtures.html" \
+    '--bg:        #0d1117'
+
+check_contains \
+    "dark theme: blue accent variable defined" \
+    "$OUT/dark/fixtures.html" \
+    '--accent:    #58a6ff'
+
+check_contains \
+    "dark theme: title rendered" \
+    "$OUT/dark/fixtures.html" \
+    "Dark Theme Demo"
+
+# ---------------------------------------------------------------------------
+# 20. dark-wide theme
+# ---------------------------------------------------------------------------
+run_test \
+    "dark-wide theme generates output" \
+    "$OUT/dark_wide/fixtures.html" \
+    "$FIXTURES" --theme dark-wide -o "$OUT/dark_wide"
+
+check_contains \
+    "dark-wide: dark background variable defined" \
+    "$OUT/dark_wide/fixtures.html" \
+    '--bg:        #0d1117'
+
+check_not_contains \
+    "dark-wide: no max-width constraint on container" \
+    "$OUT/dark_wide/fixtures.html" \
+    'max-width: 860px'
+
+# ---------------------------------------------------------------------------
+# 21. academic theme
+# ---------------------------------------------------------------------------
+run_test \
+    "academic theme generates output" \
+    "$OUT/academic/fixtures.html" \
+    "$FIXTURES" --theme academic --title "Academic Paper" --toc -o "$OUT/academic"
+
+check_contains \
+    "academic theme: serif font stack declared" \
+    "$OUT/academic/fixtures.html" \
+    'Georgia'
+
+check_contains \
+    "academic theme: title rule present" \
+    "$OUT/academic/fixtures.html" \
+    'class="title-rule"'
+
+check_contains \
+    "academic theme: print media query present" \
+    "$OUT/academic/fixtures.html" \
+    '@media print'
+
+# ---------------------------------------------------------------------------
+# 22. academic-wide theme
+# ---------------------------------------------------------------------------
+run_test \
+    "academic-wide theme generates output" \
+    "$OUT/academic_wide/fixtures.html" \
+    "$FIXTURES" --theme academic-wide --title "Academic Wide" -o "$OUT/academic_wide"
+
+check_contains \
+    "academic-wide: serif font stack declared" \
+    "$OUT/academic_wide/fixtures.html" \
+    'Georgia'
+
+check_not_contains \
+    "academic-wide: no max-width constraint on container" \
+    "$OUT/academic_wide/fixtures.html" \
+    'max-width: 720px'
+
+# ---------------------------------------------------------------------------
 # Summary
 # ---------------------------------------------------------------------------
 echo "─────────────────────────────────────────────"

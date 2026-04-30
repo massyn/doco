@@ -63,14 +63,25 @@ All matched markdown files are combined into a single HTML document in the outpu
 
 ## Themes
 
-Themes are self-contained Jinja2 HTML files with embedded CSS. The `default` theme includes:
+Themes are self-contained Jinja2 HTML files with embedded CSS. Pass a theme name with `--theme NAME`.
 
-- Clean typographic layout
-- Syntax-highlighted code blocks
-- Styled tables and blockquotes
+| Theme | Description |
+|---|---|
+| `default` | Clean GitHub-style layout, 860 px centred column |
+| `default-wide` | Same as `default` but full viewport width |
+| `professional` | Corporate blue palette, dark title banner, card layout, 900 px centred |
+| `professional-wide` | Same as `professional` but full viewport width |
+| `dark` | Dark background, blue accent, light text — good for technical docs, 860 px centred |
+| `dark-wide` | Same as `dark` but full viewport width |
+| `academic` | Serif (Georgia) typography, justified text, print-optimised, 720 px centred |
+| `academic-wide` | Same as `academic` but full viewport width |
+
+All themes support:
+
 - Optional document title
 - Optional table of contents
 - [Mermaid.js](https://mermaid.js.org) diagram support (loaded only when diagrams are present)
+- Graph diagram blocks
 
 ### Graph diagrams
 
